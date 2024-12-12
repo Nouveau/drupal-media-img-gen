@@ -1,0 +1,5 @@
+ai_image_gen.settings:
+  title: 'AI Image Generator settings'
+  description: 'AI Image Generator settings'
+  parent: ai.admin_settings
+  route_name: ai_image_gen.settings_form

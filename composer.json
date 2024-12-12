@@ -1,0 +1,20 @@
+{
+  "name": "drupal/ai_image_gen",
+  "description": "Allows the possibility to generate an image using AI.",
+  "type": "drupal-module",
+  "keywords": [
+    "Drupal"
+  ],
+  "authors": [
+    {
+      "name": "Emilie Nouveau",
+      "homepage": "http://emilienouveau.com",
+      "role": "Maintainer"
+    }
+  ],
+  "license": "GPL-2.0-or-later",
+  "require": {
+    "drupal/core": "^10.2 || ^11",
+    "drupal/ai": "^1.0.0-beta2"
+  }
+}

@@ -1,0 +1,10 @@
+name: AI Image Generator
+type: module
+description: 'Media AI Image Generator'
+package: AI Tools
+core_version_requirement: ^10.2 || ^11
+configure: ai_image_gen.settings_form
+
+dependencies:
+  - drupal:image
+  - ai:ai

@@ -3,8 +3,9 @@
 namespace Drupal\ai_image_gen\Controller;
 
 use Drupal\ai\AiProviderPluginManager;
-use Drupal\ai\OperationType\Chat\ChatInput;
-use Drupal\ai\OperationType\Chat\ChatMessage;
+//use Drupal\ai\OperationType\Chat\ChatInput;
+//use Drupal\ai\OperationType\Chat\ChatMessage;
+use Drupal\ai\OperationType\TextToImage\TextToImageInput;
 use Drupal\ai\OperationType\GenericType\ImageFile;
 use Drupal\ai_image_gen\ProviderHelper;
 use Drupal\Core\Config\ImmutableConfig;
@@ -69,74 +70,67 @@ class GenerateImage extends ControllerBase {
     return $instance;
   }
 
-  /**
-   * Create an AI image.
-   *
-   * @param \Drupal\file\Entity\File $file
-   *   File entity.
-   *
-   * @return \Symfony\Component\HttpFoundation\JsonResponse
-   *   JSON response.
-   */
-  public function generate(File $file = NULL, $lang_code = 'en') {
-    // Check that the user has access to the file.
-    if (!$file || !$file->access('view')) {
-      return new JsonResponse([
-        'error' => $this->t('The file does not exist or you do not have access to it.'),
-      ], 403);
-    }
-    // Check that the file is an image.
-    if (!$file->getMimeType() || strpos($file->getMimeType(), 'image/') !== 0) {
-      return new JsonResponse([
-        'error' => $this->t('The file is not an image.'),
-      ], 400);
+/**
+  * Create an AI image.
+  *
+  * @param string|null $prompt
+  *   The prompt for image generation.
+  * @param string $lang_code
+  *   The language code.
+  *
+  * @return \Symfony\Component\HttpFoundation\JsonResponse
+  *   JSON response.
+  */
+public function generate($prompt = NULL, $lang_code = 'en') {
+    if (!$prompt) {
+        return new JsonResponse([
+            'error' => $this->t('A prompt is required to generate an image.'),
+        ], 400);
     }
 
-    // Check if there is a preferred model.
+    // Get provider and model
     $data = $this->providerHelper->getSetProvider();
     if (!$data) {
-      return new JsonResponse([
-        'error' => $this->t('No AI provider found.'),
-      ], 500);
+        return new JsonResponse([
+            'error' => $this->t('No AI provider found.'),
+        ]);
     }
     $provider = $data['provider_id'];
     $model = $data['model_id'];
 
-    // Get the configuration.
-    $prompt = $this->genConfig->get('prompt');
-    $image_style_name = $this->genConfig->get('image_style');
-    // If the image style is set, get the image URL.
-    $image = new ImageFile();
-    if ($image_style_name) {
-      /** @var \Drupal\Image\Entity\ImageStyle */
-      $image_style = $this->entityTypeManager->getStorage('image_style')->load($image_style_name);
-      $image_uri = $file->getFileUri();
-      // Get the image style url and generate it.
-      $scaled_image_uri = $image_style->buildUri($image_uri);
-      $image_style->createDerivative($image_uri, $scaled_image_uri);
-      $image->setBinary(file_get_contents($scaled_image_uri));
-      $image->setMimeType('image/png');
-    } else {
-      // Just get the file.
-      $image->setFileFromFile($file);
-    }
-    $images[] = $image;
-    $language = $this->languageManager->getLanguageName($lang_code) ?? 'English';
-    $prompt_text = $this->twig->renderInline($prompt, [
-      'entity_lang_name' => $language,
-    ]);
+    // Set configuration for image generation
+    $config = [
+        "n" => 1,
+        "response_format" => "url",
+        "size" => "1024x1024",
+        "quality" => "standard",
+        "style" => "vivid",
+    ];
 
-    $input = new ChatInput([
-      new ChatMessage('user',
-        (string) $prompt_text,
-        $images
-      ),
+    $provider->setConfiguration($config);
+    $input = new TextToImageInput($prompt);
+    $response = $provider->textToImage($input, $model);
+
+    // Create file from the generated image
+    $file = $response->getNormalized()[0]->getAsFileEntity();
+
+    // Create media entity
+    $media_storage = $this->entityTypeManager->getStorage('media');
+    $media = $media_storage->create([
+        'bundle' => 'image',
+        'name' => $prompt,
+        'field_media_image' => [
+            'target_id' => $file->id(),
+            'alt' => $prompt,
+        ],
+        'status' => 1,
     ]);
-    $output = $provider->chat($input, $model);
-    $image = $output->getNormalized()->getText();
+    $media->save();
+
     return new JsonResponse([
-      'image' => $image,
+        'media_id' => $media->id(),
+        'file_url' => $file->createFileUrl(),
+        'message' => $this->t('Image generated successfully'),
     ]);
   }
-
 }

@@ -42,8 +42,7 @@ class ProviderHelper {
    */
   public function getSetProvider() {
     // Check if there is a preferred model.
-    $preferred_model = $this->configFactory->get('ai_image_gen
-  .settings')->get('ai_model');
+    $preferred_model = $this->configFactory->get('ai_image_gen.settings')->get('ai_model');
     $provider = NULL;
     $model = NULL;
     if ($preferred_model) {
@@ -51,7 +50,7 @@ class ProviderHelper {
       $model = $this->aiProviderManager->getModelNameFromSimpleOption($preferred_model);
     } else {
       // Get the default provider.
-      $default_provider = $this->aiProviderManager->getDefaultProviderForOperationType('chat_with_image_vision');
+      $default_provider = $this->aiProviderManager->getDefaultProviderForOperationType('text_to_image');
       if (empty($default_provider['provider_id'])) {
         // If we got nothing return NULL.
         return NULL;
@@ -64,5 +63,4 @@ class ProviderHelper {
       'model_id' => $model,
     ];
   }
-
 }

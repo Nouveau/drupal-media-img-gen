@@ -98,9 +98,7 @@ class AiImageGenSettingsForm extends ConfigFormBase {
       '#empty_option' => $this->t('Original'),
     ];
 
-    $models = $this->providerManager->getSimpleProviderModelOptions('text_to_image', TRUE, TRUE, [
-      AiModelCapability::ChatWithImageVision,
-    ]);
+    $models = $this->providerManager->getSimpleProviderModelOptions('text_to_image', TRUE, TRUE);
 
     $form['ai_model'] = [
       '#title' => $this->t('AI provider/model'),

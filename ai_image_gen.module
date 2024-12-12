@@ -1,0 +1,89 @@
+<?php
+
+/**
+ * @file
+ * Contains hook implementations for AI Image Generator.
+ */
+
+declare(strict_types=1);
+
+use Drupal\Core\Link;
+use Drupal\image\Plugin\Field\FieldWidget\ImageWidget;
+
+/**
+ * Implements hook_field_widget_single_element_form_alter().
+ *
+ * Modify the form for image widgets.
+ */
+function ai_image_gen_field_widget_single_element_form_alter(&$element, &$form_state, $context) {
+  // Only image based field widgets are supported.
+  if ($context['widget'] instanceof ImageWidget) {
+    // Attach JS.
+    $element['#attached']['library'][] = 'ai_image_gen/generator';
+    // Get the entities language or the sites default language.
+    $form_object = $form_state->getFormObject();
+    $config = \Drupal::config('ai_image_gen.settings');
+    $lang = method_exists($form_object, 'getEntity') ? $form_object->getEntity()->language()->getId() : \Drupal::languageManager()->getDefaultLanguage()->getId();
+    $element['#attached']['drupalSettings']['ai_image_gen']['lang'] = $lang;
+
+    // Only show if the user has permission to generate images.
+    if (!\Drupal::currentUser()->hasPermission('generate ai image')) {
+      return;
+    }
+
+    // Only show if a default provider exists and is working.
+    if (!\Drupal::service('ai_image_gen.provider')->getSetProvider()) {
+      // Set a warning message if the user has the right to setup the provider.
+      if (\Drupal::currentUser()->hasPermission('administer ai settings')) {
+        \Drupal::messenger()->addWarning(t('No AI provider is set for the AI Image Generator. Please configure one in the %ai_image_gen_settings_link or setup a default Chat with Image Vision in the %ai_settings_link.', [
+          '%ai_image_gen_settings_link' => Link::createFromRoute(t('AI Image Gen settings'), 'ai_image_gen.settings_form')->toString(),
+          '%ai_settings_link' => Link::createFromRoute(t('AI settings'), 'ai.settings_form')->toString(),
+        ]));
+      }
+      return;
+    }
+
+/*     // Show image generation button.
+    $element['ai_image_generation'][$context['delta']] = [
+      '#type' => 'button',
+      '#value' => 'Generate with AI',
+      '#prefix' => '<div class="ai-image-generation-wrapper">',
+      '#suffix' => '</div>',
+      '#attributes' => [
+        'class' => ['ai-image-generation', 'button--primary'],
+        'data-file-id' => $element['#default_value']['fids'][0] ?? 0,
+      ],
+    ]; */
+  }
+}
+
+function ai_image_gen_form_media_image_add_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  if (!\Drupal::currentUser()->hasPermission('generate ai image')) {
+    return;
+  }
+
+  $form['#attached']['library'][] = 'ai_image_gen/generator';
+
+  $form['generate_image'] = [
+    '#type' => 'container',
+    '#weight' => -100,
+    'prompt' => [
+      '#type' => 'textfield',
+      '#title' => t('What would you like to generate?'),
+    ],
+    'generate' => [
+      '#type' => 'button',
+      '#value' => t('Generate Image'),
+      '#attributes' => ['id' => 'edit-generate'],
+    ],
+    'preview' => [
+      '#type' => 'container',
+      '#attributes' => ['id' => 'edit-image-preview'],
+    ],
+  ];
+}
+function _ai_image_gen_preview_callback($form, $form_state) {
+  $response = new \Drupal\Core\Ajax\AjaxResponse();
+  $response->addCommand(new \Drupal\Core\Ajax\ReplaceCommand('#edit-image-preview', $form['generate_image']['preview']));
+  return $response;
+}

@@ -1,0 +1,13 @@
+ai_image_gen.settings:
+  type: config_object
+  label: 'AI Image Generator Settings'
+  mapping:
+    prompt:
+      type: string
+      label: 'The prompt to use for the AI'
+    image_style:
+      type: string
+      label: 'The image style to apply the effects to'
+    ai_model:
+      type: string
+      label: 'The AI model to use'

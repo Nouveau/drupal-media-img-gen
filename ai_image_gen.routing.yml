@@ -1,0 +1,20 @@
+ai_image_gen.settings_form:
+  path: '/admin/config/ai/ai_image_gen'
+  defaults:
+    _form: '\Drupal\ai_image_gen\Form\AiImageGenSettingsForm'
+    _title: 'AI Image Generator Settings'
+  requirements:
+    _permission: 'administer ai'
+ai_image_gen.generate:
+  path: '/api/ai-image-gen/generate/{prompt}'
+  defaults:
+    _controller: '\Drupal\ai_image_gen\Controller\GenerateImage::generate'
+    _title: 'Generate AI Image'
+    lang_code: 'en'
+  requirements:
+    _permission: 'generate ai image'
+  options:
+    parameters:
+      prompt:
+        type: string
+    no_cache: TRUE

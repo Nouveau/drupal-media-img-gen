@@ -1,0 +1,13 @@
+generator:
+  js:
+    js/ai_image_gen.js: {}
+  css:
+    theme:
+      css/ai_image_gen.css: {}
+  dependencies:
+    - core/jquery
+    - core/drupalSettings
+    - core/drupal
+    - core/once
+    - file/drupal.file
+    - core/drupal.ajax

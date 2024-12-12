@@ -27,7 +27,7 @@ function ai_image_gen_field_widget_single_element_form_alter(&$element, &$form_s
     $element['#attached']['drupalSettings']['ai_image_gen']['lang'] = $lang;
 
     // Only show if the user has permission to generate images.
-    if (!\Drupal::currentUser()->hasPermission('generate ai images')) {
+    if (!\Drupal::currentUser()->hasPermission('generate ai image')) {
       return;
     }
 
@@ -43,7 +43,7 @@ function ai_image_gen_field_widget_single_element_form_alter(&$element, &$form_s
       return;
     }
 
-    // Show image generation button.
+/*     // Show image generation button.
     $element['ai_image_generation'][$context['delta']] = [
       '#type' => 'button',
       '#value' => 'Generate with AI',
@@ -53,6 +53,40 @@ function ai_image_gen_field_widget_single_element_form_alter(&$element, &$form_s
         'class' => ['ai-image-generation', 'button--primary'],
         'data-file-id' => $element['#default_value']['fids'][0] ?? 0,
       ],
-    ];
+    ]; */
   }
+}
+
+function ai_image_gen_form_media_image_add_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  if (!\Drupal::currentUser()->hasPermission('generate ai image')) {
+    return;
+  }
+
+  $form['#attached']['library'][] = 'ai_image_gen/generator';
+
+  $form['generate_image'] = [
+    '#type' => 'container',
+    '#weight' => -100,
+    'prompt' => [
+      '#type' => 'textfield',
+      '#title' => t('What would you like to generate?'),
+    ],
+    'generate' => [
+      '#type' => 'button',
+      '#value' => t('Generate Image'),
+      '#ajax' => [
+        'callback' => '_ai_image_gen_preview_callback',
+        'wrapper' => 'edit-image-preview',
+      ],
+    ],
+    'preview' => [
+      '#type' => 'container',
+      '#attributes' => ['id' => 'edit-image-preview'],
+    ],
+  ];
+}
+function _ai_image_gen_preview_callback($form, $form_state) {
+  $response = new \Drupal\Core\Ajax\AjaxResponse();
+  $response->addCommand(new \Drupal\Core\Ajax\ReplaceCommand('#edit-image-preview', $form['generate_image']['preview']));
+  return $response;
 }

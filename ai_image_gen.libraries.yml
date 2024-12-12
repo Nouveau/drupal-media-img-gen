@@ -8,5 +8,6 @@ generator:
     - core/jquery
     - core/drupalSettings
     - core/drupal
+    - core/once
     - file/drupal.file
     - core/drupal.ajax

@@ -1,57 +1,62 @@
-(function ($, Drupal, drupalSettings) {
+(function ($, Drupal) {
+  Drupal.behaviors.aiImageGenerator = {
+    attach: function (context) {
+      console.log('Attaching Image Generator behavior.');
 
-  'use strict';
+      // Only run the behavior when #media-image-add-form is in the context
+      $(context).find('#media-image-add-form').each(function () {
+        // Log context to confirm it's being scoped to the form
+        console.log('Found #media-image-add-form in context', context);
 
-  Drupal.behaviors.aiAltImage = {
-    trackedImages: {},
-    finishedWorking: (that) => {
-      // Untrack the file.
-      Drupal.behaviors.aiAltImage.trackedImages[$(that).data('file-id')] = false;
-      // Remove the throbber.
-      $(that).parent().find('.ajax-progress').remove();
-      // Enable the button.
-      if (!drupalSettings.ai_image_gen.hide_button) {
-        $(that).show();
-      }
-      // Enable the text field.
-      $(that).parent('.form-managed-file').find("input[name$='[alt]']").removeAttr('disabled');
-    },
-    attach: (context) => {
-      $('.ai-image-generation').off('click').on('click', function (e) {
-        // Set that it is being tracked.
-        Drupal.behaviors.aiImageGen.trackedImages[$(this).data('file-id')] = true;
-        e.preventDefault();
-        // Manually add the throbber.
-        let throbber = $('<div class="ajax-progress ajax-progress--throbber"><div class="ajax-progress__throbber">&nbsp;</div><div class="ajax-progress__message">' + Drupal.t('Generating alt text...') + '</div></div>');
-        $(this).parent().append(throbber);
-        $(this).parent('.form-managed-file').find("input[name$='[alt]']").attr('disabled', 'disabled');
-        // Disable the button.
-        $(this).hide();
-        let that = $(this);
-        let lang = drupalSettings.ai_image_gen.lang;
-        $.ajax({
-          url: drupalSettings.path.baseUrl + 'admin/config/ai/ai_image_gen/generate/' + $(this).data('file-id') + '/' + lang,
-          type: 'GET',
-          success: function (response) {
-            if ('image' in response) {
-              // Add handler for displaying generated Image
-              $(that).parents('.form-managed-file').find("input[name$='[alt]']").val(response.image);
+        const generateButton = $(this).find('#edit-generate');
+        console.log('Generate button found:', generateButton.length);
+
+        // Log the button element before the event is bound to confirm it’s correctly selected
+        console.log('Button element:', generateButton);
+
+        console.log(generateButton.prop('disabled')); // Should return false if the button is enabled
+
+
+        // Only attach the event listener if the button exists
+        if (generateButton.length) {
+          generateButton.on('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            console.log('#edit-generate clicked.');
+
+            const prompt = $('#edit-prompt').val();
+            const baseUrl = drupalSettings.path.baseUrl || '/';
+            console.log('Base URL:', baseUrl);
+
+            if (!prompt) {
+              alert('Please enter a prompt.');
+              return;
             }
-            Drupal.behaviors.aiImageGen.finishedWorking(that);
-          },
-          error: function (response) {
-            let messenger = new Drupal.Message();
-            if ('responseJSON' in response && 'error' in response.responseJSON) {
-              messenger.add('Error: ' + response.responseJSON.error, { type: 'warning' });
-            }
-            else {
-              messenger.add(Drupal.t('We could not create an Image, please try again later.'), { type: 'warning' });
-            }
-            Drupal.behaviors.aiImageGen.finishedWorking(that);
-          }
-        });
+
+            $.ajax({
+              url: `${baseUrl}api/ai-image-gen/generate/${encodeURIComponent(prompt)}`,
+              method: 'GET',
+              success: function (response) {
+                console.log('Response received:', response);
+                if (response && response.file_url) {
+                  $('#edit-image-preview').html(`<img src="${response.file_url}" alt="${prompt}">`);
+                  $('input[name="field_media_image[0][fids]"]').val(response.media_id);
+                } else {
+                  console.warn('Unexpected response format:', response);
+                }
+              },
+              error: function (xhr, status, error) {
+                console.error(`Error generating image: ${status} - ${error}`);
+                console.error('Server response:', xhr.responseText);
+              },
+            });
+          });
+        }
+        else {
+          console.error('Generate button not found');
+        }
       });
-    }
+    },
   };
-
-})(jQuery, Drupal, drupalSettings);
+})(jQuery, Drupal);

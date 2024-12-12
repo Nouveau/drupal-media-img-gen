@@ -95,11 +95,10 @@ class AiImageGenSettingsForm extends ConfigFormBase {
       '#type' => 'select',
       '#options' => $imageStylesOptions,
       '#default_value' => $config->get('image_style') ?? 'ai_image_gen',
-      '#empty_option' => $this->t('Original (NOT RECOMMENDED)'),
-      '#description' => $this->t('Image style to use before sending the image to reduce resolution and reformat as PNG. Smaller resolutions saves costs, but may affect the quality of the generated alt text. Leave empty to send original, but note that not all providers takes all resolutions/formats.'),
+      '#empty_option' => $this->t('Original'),
     ];
 
-    $models = $this->providerManager->getSimpleProviderModelOptions('chat', TRUE, TRUE, [
+    $models = $this->providerManager->getSimpleProviderModelOptions('text_to_image', TRUE, TRUE, [
       AiModelCapability::ChatWithImageVision,
     ]);
 

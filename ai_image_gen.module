@@ -74,10 +74,7 @@ function ai_image_gen_form_media_image_add_form_alter(&$form, \Drupal\Core\Form\
     'generate' => [
       '#type' => 'button',
       '#value' => t('Generate Image'),
-      '#ajax' => [
-        'callback' => '_ai_image_gen_preview_callback',
-        'wrapper' => 'edit-image-preview',
-      ],
+      '#attributes' => ['id' => 'edit-generate'],
     ],
     'preview' => [
       '#type' => 'container',

@@ -21,7 +21,6 @@
         if (generateButton.length) {
           generateButton.on('click', function (e) {
             e.preventDefault();
-            e.stopPropagation();
 
             console.log('#edit-generate clicked.');
 
@@ -33,6 +32,8 @@
               alert('Please enter a prompt.');
               return;
             }
+
+            console.log('Request URL:', `${baseUrl}api/ai-image-gen/generate/${encodeURIComponent(prompt)}`);
 
             $.ajax({
               url: `${baseUrl}api/ai-image-gen/generate/${encodeURIComponent(prompt)}`,

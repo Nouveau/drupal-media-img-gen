@@ -35,6 +35,10 @@
 
             console.log('Request URL:', `${baseUrl}api/ai-image-gen/generate/${encodeURIComponent(prompt)}`);
 
+            // Add throbber before AJAX call
+            $('#edit-image-preview').html('<div class="ajax-progress ajax-progress-throbber"><div class="throbber">&nbsp;</div><div class="message">' + Drupal.t('Generating image...') + '</div></div>');
+
+
             $.ajax({
               url: `${baseUrl}api/ai-image-gen/generate/${encodeURIComponent(prompt)}`,
               method: 'GET',

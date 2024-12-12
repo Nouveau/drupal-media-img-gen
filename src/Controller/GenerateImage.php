@@ -102,13 +102,13 @@ public function generate($prompt = NULL, $lang_code = 'en') {
     $config = [
         "n" => 1,
         "response_format" => "url",
-        "size" => "1024x1024",
+        "size" => "256x256",
         "quality" => "standard",
         "style" => "vivid",
     ];
 
     $provider->setConfiguration($config);
-    $input = new TextToImageInput($prompt);
+    $input = new TextToImageInput($prompt_styled);
     $response = $provider->textToImage($input, $model);
 
     // Create file from the generated image

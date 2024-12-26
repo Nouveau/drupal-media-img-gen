@@ -57,7 +57,7 @@ function ai_image_gen_field_widget_single_element_form_alter(&$element, &$form_s
   }
 }
 
-function ai_image_gen_form_media_image_add_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+function ai_image_gen_form_media_generated_image_add_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
   if (!\Drupal::currentUser()->hasPermission('generate ai image')) {
     return;
   }

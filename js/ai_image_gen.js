@@ -4,9 +4,9 @@
       console.log('Attaching Image Generator behavior.');
 
       // Only run the behavior when #media-image-add-form is in the context
-      $(context).find('#media-image-add-form').each(function () {
+      $(context).find('#media-generated-image-add-form').each(function () {
         // Log context to confirm it's being scoped to the form
-        console.log('Found #media-image-add-form in context', context);
+        console.log('Found #media-generated-image-add-form in context', context);
 
         const generateButton = $(this).find('#edit-generate');
         console.log('Generate button found:', generateButton.length);
@@ -37,7 +37,6 @@
 
             // Add throbber before AJAX call
             $('#edit-image-preview').html('<div class="ajax-progress ajax-progress-throbber"><div class="throbber">&nbsp;</div><div class="message">' + Drupal.t('Generating image...') + '</div></div>');
-
 
             $.ajax({
               url: `${baseUrl}api/ai-image-gen/generate/${encodeURIComponent(prompt)}`,

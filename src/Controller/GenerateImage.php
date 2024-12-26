@@ -3,8 +3,6 @@
 namespace Drupal\ai_image_gen\Controller;
 
 use Drupal\ai\AiProviderPluginManager;
-//use Drupal\ai\OperationType\Chat\ChatInput;
-//use Drupal\ai\OperationType\Chat\ChatMessage;
 use Drupal\ai\OperationType\TextToImage\TextToImageInput;
 use Drupal\ai\OperationType\GenericType\ImageFile;
 use Drupal\ai_image_gen\ProviderHelper;
@@ -117,9 +115,9 @@ public function generate($prompt = NULL, $lang_code = 'en') {
     // Create media entity
     $media_storage = $this->entityTypeManager->getStorage('media');
     $media = $media_storage->create([
-        'bundle' => 'image',
+        'bundle' => 'generated_image',
         'name' => $prompt,
-        'field_media_image' => [
+        'field_media_generated_image' => [
             'target_id' => $file->id(),
             'alt' => $prompt,
         ],

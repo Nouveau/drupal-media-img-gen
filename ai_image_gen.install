@@ -2,10 +2,62 @@
 
 /**
  * @file
- * Contains install implementations for AI Image Generator.
+ * Install, update and uninstall functions for the AI Image Gen module.
  */
 
-declare(strict_types=1);
+ use Drupal\media\Entity\MediaType;
+ use Drupal\field\Entity\FieldStorageConfig;
+ use Drupal\field\Entity\FieldConfig;
+
+/**
+ * Implements hook_install().
+ */
+function ai_image_gen_install() {
+  // Check if the media type already exists to avoid duplicates.
+  if (MediaType::load('generated_image')) {
+    return;
+  }
+
+  // Create the 'Generated Image' media type.
+  $media_type = MediaType::create([
+    'id' => 'generated_image',
+    'label' => 'Generated Image',
+    'description' => 'Media type for AI or dynamically generated images.',
+    'source' => 'image',
+    'source_configuration' => [
+      'source_field' => 'field_media_generated_image',
+    ],
+  ]);
+$media_type->save();
+
+// Create the source field
+$field_storage = \Drupal::entityTypeManager()
+  ->getStorage('field_storage_config')
+  ->create([
+    'field_name' => 'field_media_generated_image',
+    'entity_type' => 'media',
+    'type' => 'image',
+    'cardinality' => 1,
+  ]);
+$field_storage->save();
+
+// Create the field instance
+$field = \Drupal::entityTypeManager()
+  ->getStorage('field_config')
+  ->create([
+    'field_storage' => $field_storage,
+    'bundle' => 'generated_image',
+    'label' => 'Generated Image',
+    'required' => TRUE,
+    'settings' => [
+      'alt_field' => TRUE,
+      'alt_field_required' => TRUE,
+      'file_directory' => '[date:custom:Y]-[date:custom:m]',
+      'file_extensions' => 'png gif jpg jpeg',
+    ],
+  ]);
+$field->save();
+}
 
 /**
  * Implements hook_uninstall().

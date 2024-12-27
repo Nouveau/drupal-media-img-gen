@@ -1,8 +1,8 @@
 langcode: en
 status: true
 dependencies: {  }
-name: ai_image_alt_text
-label: 'AI Image Alt Text'
+name: ai_image_gen
+label: 'AI Image Generator'
 effects:
   6c9c9f31-ab65-41b2-bd39-bac4c63433aa:
     uuid: 6c9c9f31-ab65-41b2-bd39-bac4c63433aa

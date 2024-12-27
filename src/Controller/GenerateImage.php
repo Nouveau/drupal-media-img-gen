@@ -86,6 +86,8 @@ public function generate($prompt = NULL, $lang_code = 'en') {
         ], 400);
     }
 
+    $prompt_styled = $prompt;
+
     // Get provider and model
     $data = $this->providerHelper->getSetProvider();
     if (!$data) {

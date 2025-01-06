@@ -81,9 +81,28 @@ function ai_image_gen_form_media_generated_image_add_form_alter(&$form, \Drupal\
       '#attributes' => ['id' => 'edit-image-preview'],
     ],
   ];
+  // Add custom submit handler to update existing entity
+  $form['actions']['submit']['#submit'][] = 'ai_image_gen_form_submit';
+
+  $form['actions']['submit']['#disabled'] = TRUE;
+  $form['actions']['submit']['#attributes']['class'][] = 'js-form-submit-generated';
 }
+
 function _ai_image_gen_preview_callback($form, $form_state) {
   $response = new \Drupal\Core\Ajax\AjaxResponse();
   $response->addCommand(new \Drupal\Core\Ajax\ReplaceCommand('#edit-image-preview', $form['generate_image']['preview']));
   return $response;
+}
+
+function ai_image_gen_form_submit($form, FormStateInterface $form_state) {
+  \Drupal::logger('ai_image_gen')->notice('Submit handler called');
+  $media_id = $form_state->getValue('generated_media_id');
+  \Drupal::logger('ai_image_gen')->notice('Media ID: @id', ['@id' => $media_id]);
+
+  if ($media_id) {
+    $media = \Drupal::entityTypeManager()
+      ->getStorage('media')
+      ->load($media_id);
+    $media->save();
+  }
 }
